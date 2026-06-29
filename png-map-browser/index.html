@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PNG Map Browser</title>
+    <link
+      href="vendor/bootstrap/bootstrap.min.css"
+      rel="stylesheet">
+    <link
+      rel="stylesheet"
+      href="vendor/bootstrap-icons/bootstrap-icons.min.css">
+    <link
+      rel="stylesheet"
+      href="vendor/leaflet/leaflet.css">
+    <link rel="stylesheet" href="assets/styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar border-end">
+        <div class="brand-row border-bottom">
+          <div>
+            <h1 class="h5 mb-0">PNG Map Browser</h1>
+            <div class="text-secondary small">Papua New Guinea GeoJSON maps</div>
+          </div>
+          <button class="btn btn-outline-secondary btn-sm d-lg-none" id="collapseSidebar" title="Hide panel">
+            <i class="bi bi-layout-sidebar-inset"></i>
+          </button>
+        </div>
+
+        <div class="control-panel">
+          <div class="btn-group w-100" role="group" aria-label="Map actions">
+            <button class="btn btn-outline-secondary" id="backButton" type="button" title="Go up one level">
+              <i class="bi bi-arrow-left"></i>
+            </button>
+            <button class="btn btn-outline-secondary" id="fitButton" type="button" title="Fit map to current layer">
+              <i class="bi bi-arrows-fullscreen"></i>
+            </button>
+            <button class="btn btn-outline-secondary" id="resetButton" type="button" title="Reset to home view">
+              <i class="bi bi-house"></i>
+            </button>
+          </div>
+
+          <div class="current-card mt-3">
+            <div class="text-secondary small">Current view</div>
+            <div class="fw-semibold" id="currentTitle">Loading</div>
+            <div class="small text-secondary" id="currentDetail"></div>
+          </div>
+
+          <label class="form-label mt-3" for="featureSearch">Search current layer</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input class="form-control" id="featureSearch" type="search" placeholder="Name or code">
+          </div>
+
+          <label class="form-label mt-3" for="addressSearch">Address finder</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+            <input class="form-control" id="addressSearch" type="search" placeholder="Province, district, or LLG">
+          </div>
+          <div class="address-results mt-2" id="addressResults"></div>
+        </div>
+
+        <div class="feature-list border-top" id="featureList"></div>
+      </aside>
+
+      <main class="map-area">
+        <nav class="topbar border-bottom">
+          <div class="topbar-left">
+            <button class="btn btn-outline-secondary btn-sm d-lg-none" id="showSidebar" title="Show panel">
+              <i class="bi bi-layout-sidebar"></i>
+            </button>
+            <div class="crumbs" id="breadcrumbs"></div>
+          </div>
+          <div class="topbar-right">
+            <div class="filter-bar" aria-label="Map filters">
+              <div class="filter-field filter-year">
+                <label class="form-label" for="yearSelect">Year</label>
+                <select class="form-select form-select-sm" id="yearSelect"></select>
+              </div>
+              <div class="filter-field filter-layer">
+                <label class="form-label" for="mapSelect">Layer</label>
+                <select class="form-select form-select-sm" id="mapSelect"></select>
+              </div>
+              <div class="filter-field filter-base">
+                <label class="form-label" for="baseLayerSelect">Base map</label>
+                <select class="form-select form-select-sm" id="baseLayerSelect">
+                  <option value="osm">OpenStreetMap</option>
+                  <option value="carto">Light</option>
+                  <option value="none">No base map</option>
+                </select>
+              </div>
+            </div>
+            <div class="status-pill" id="statusText">Starting</div>
+          </div>
+        </nav>
+        <div id="map"></div>
+      </main>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+      <div id="appToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+          <strong class="me-auto">PNG Map Browser</strong>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastBody"></div>
+      </div>
+    </div>
+
+    <script
+      src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script
+      src="vendor/leaflet/leaflet.js"></script>
+    <script src="assets/app.js"></script>
+  </body>
+</html>

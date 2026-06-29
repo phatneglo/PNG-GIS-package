@@ -1,0 +1,5 @@
+﻿Source: https://github.com/wilfred-wulbou/papua-new-guinea-geolist
+Raw: https://raw.githubusercontent.com/wilfred-wulbou/papua-new-guinea-geolist/main/GeoList.json
+Author: Wilfred Wulbou
+License: MIT
+Purpose: Supplemental text-only PNG province/district/LLG/ward hierarchy for address JSON. This is not geometry data.

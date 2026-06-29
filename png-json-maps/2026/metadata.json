@@ -1,0 +1,61 @@
+{
+  "generated_at_utc": "2026-06-29T05:05:54.502185+00:00",
+  "generator": "png_json_maps_auto.py",
+  "country": "Papua New Guinea",
+  "levels_detected": {
+    "adm0": 1,
+    "adm1": 22,
+    "adm2": 87,
+    "adm3": 326
+  },
+  "geojson_files_created": 119,
+  "topojson_files_created": 354,
+  "source_layers": [
+    {
+      "level": 0,
+      "api_url": "https://www.geoboundaries.org/api/current/gbOpen/PNG/ADM0/",
+      "geojson_url": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/PNG/ADM0/geoBoundaries-PNG-ADM0.geojson",
+      "boundary_id": "PNG-ADM0-50406891",
+      "boundary_source": "OpenStreetMap, Wambacher",
+      "boundary_license": "Open Data Commons Open Database License 1.0",
+      "boundary_year": "2017",
+      "downloaded_to": "D:\\PROJECTS\\PNG\\_ASSETS\\PNG Location Package\\png_auto_maps_package\\_png-map-work\\geoboundaries\\PNG_ADM0.geojson"
+    },
+    {
+      "level": 1,
+      "api_url": "https://www.geoboundaries.org/api/current/gbOpen/PNG/ADM1/",
+      "geojson_url": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/PNG/ADM1/geoBoundaries-PNG-ADM1.geojson",
+      "boundary_id": "PNG-ADM1-602756",
+      "boundary_source": "Papua New Guinea National Statistics Office, OCHA ROAP",
+      "boundary_license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "boundary_year": "2019",
+      "downloaded_to": "D:\\PROJECTS\\PNG\\_ASSETS\\PNG Location Package\\png_auto_maps_package\\_png-map-work\\geoboundaries\\PNG_ADM1.geojson"
+    },
+    {
+      "level": 2,
+      "api_url": "https://www.geoboundaries.org/api/current/gbOpen/PNG/ADM2/",
+      "geojson_url": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/PNG/ADM2/geoBoundaries-PNG-ADM2.geojson",
+      "boundary_id": "PNG-ADM2-67681753",
+      "boundary_source": "OCHA ROAP, Papua New Guinea National Statistics Office",
+      "boundary_license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "boundary_year": "2019",
+      "downloaded_to": "D:\\PROJECTS\\PNG\\_ASSETS\\PNG Location Package\\png_auto_maps_package\\_png-map-work\\geoboundaries\\PNG_ADM2.geojson"
+    },
+    {
+      "level": 3,
+      "api_url": "https://www.geoboundaries.org/api/current/gbOpen/PNG/ADM3/",
+      "geojson_url": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/PNG/ADM3/geoBoundaries-PNG-ADM3.geojson",
+      "boundary_id": "PNG-ADM3-22992897",
+      "boundary_source": "Papua New Guinea National Statistics Office, OCHA ROAP",
+      "boundary_license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "boundary_year": "2019",
+      "downloaded_to": "D:\\PROJECTS\\PNG\\_ASSETS\\PNG Location Package\\png_auto_maps_package\\_png-map-work\\geoboundaries\\PNG_ADM3.geojson"
+    }
+  ],
+  "notes": [
+    "Primary source is geoBoundaries gbOpen automated API unless local files are provided in a future version.",
+    "PNG hierarchy is represented as country -> region -> province -> district -> LLG -> ward.",
+    "Ward boundaries are generated only if an ADM4 geometry layer is available from the selected open source.",
+    "Codes for ADM2+ may be generated when the open dataset does not provide official parent codes."
+  ]
+}

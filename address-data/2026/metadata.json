@@ -1,0 +1,144 @@
+{
+  "name": "Papua New Guinea Address Data",
+  "slug": "png-address-data",
+  "year": "2026",
+  "country": {
+    "code": "PNG",
+    "name": "Papua New Guinea"
+  },
+  "generated_at_utc": "2026-06-29T06:08:55+00:00",
+  "source_generated_at_utc": "2026-06-29T05:18:38.513661+00:00",
+  "record_count": 6857,
+  "level_counts": {
+    "district": 87,
+    "llg": 326,
+    "province": 22,
+    "region": 4,
+    "ward": 6418
+  },
+  "duplicate_code_count": 14,
+  "columns": [
+    "record_id",
+    "code",
+    "name",
+    "level",
+    "label",
+    "path",
+    "country_code",
+    "country_name",
+    "region_code",
+    "region_name",
+    "province_code",
+    "province_name",
+    "district_code",
+    "district_name",
+    "llg_code",
+    "llg_name",
+    "ward_code",
+    "ward_name",
+    "ward_number",
+    "code_system",
+    "standard_code",
+    "is_standard_code",
+    "source_code",
+    "source_code_column",
+    "code_note",
+    "source_dataset",
+    "source_url",
+    "matched_to_map",
+    "has_boundary",
+    "geometry_available",
+    "source_province_name",
+    "source_district_name",
+    "source_llg_name",
+    "next_level",
+    "child_level",
+    "child_records_available",
+    "child_record_note"
+  ],
+  "formats": [
+    "json",
+    "csv",
+    "xml",
+    "sql"
+  ],
+  "encoding": "UTF-8",
+  "hierarchy": [
+    {
+      "level": "country",
+      "label": "Country",
+      "available_in_address_json": true,
+      "available_as_boundary": true,
+      "code_system_note": "ISO 3166-1 alpha-3."
+    },
+    {
+      "level": "region",
+      "label": "Region",
+      "available_in_address_json": true,
+      "available_as_boundary": true,
+      "code_system_note": "Package grouping used by PNG map/address package."
+    },
+    {
+      "level": "province",
+      "label": "Province",
+      "available_in_address_json": true,
+      "available_as_boundary": true,
+      "code_system_note": "Province codes use ISO 3166-2:PG where supplied by source shapeISO."
+    },
+    {
+      "level": "district",
+      "label": "District",
+      "available_in_address_json": true,
+      "available_as_boundary": true,
+      "code_system_note": "Generated package codes when source has no official code field."
+    },
+    {
+      "level": "llg",
+      "label": "Local-level government",
+      "available_in_address_json": true,
+      "available_as_boundary": true,
+      "code_system_note": "Generated package codes when source has no official code field."
+    },
+    {
+      "level": "ward",
+      "label": "Ward",
+      "available_in_address_json": true,
+      "available_as_boundary": false,
+      "code_system_note": "Official PNG hierarchy includes wards below LLG. Supplemental text ward records may exist even when ward boundary geometry is unavailable."
+    },
+    {
+      "level": "census_unit",
+      "label": "Census unit",
+      "available_in_address_json": false,
+      "available_as_boundary": false,
+      "code_system_note": "Used for census purposes below ward; not included in the current source data."
+    }
+  ],
+  "sources": [],
+  "supplemental_sources": [
+    {
+      "name": "papua-new-guinea-geolist",
+      "url": "https://github.com/wilfred-wulbou/papua-new-guinea-geolist",
+      "license": "MIT",
+      "usage": "Supplemental text-only ward names for address autocomplete. No geometry.",
+      "local_path": "data-sources\\papua-new-guinea-geolist\\GeoList.json"
+    }
+  ],
+  "stats": {
+    "regions": 4,
+    "provinces": 22,
+    "districts": 87,
+    "llgs": 326,
+    "wards": 6418,
+    "ward_boundaries": 0,
+    "supplemental_ward_records": 6418,
+    "supplemental_ward_records_matched_to_map_llg": 5091,
+    "supplemental_ward_records_unmatched_to_map_llg": 1327,
+    "flat_records": 6857
+  },
+  "notes": [
+    "Province codes use ISO 3166-2:PG where available.",
+    "District, LLG, and supplemental ward codes may be generated package codes when no official source code is available.",
+    "Ward records are address/search records only unless geometry_available is true."
+  ]
+}

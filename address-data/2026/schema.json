@@ -1,0 +1,228 @@
+{
+  "table": "png_address_records",
+  "primary_key": "record_id",
+  "columns": [
+    {
+      "name": "record_id",
+      "type": "string",
+      "nullable": true,
+      "description": "Unique deterministic row identifier for this exported dataset."
+    },
+    {
+      "name": "code",
+      "type": "string",
+      "nullable": false,
+      "description": "Stable record identifier in this data package."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "nullable": true,
+      "description": "Short display name for the address record."
+    },
+    {
+      "name": "level",
+      "type": "string",
+      "nullable": true,
+      "description": "Administrative level: region, province, district, llg, or ward."
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "nullable": true,
+      "description": "Full readable address label."
+    },
+    {
+      "name": "path",
+      "type": "json_array",
+      "nullable": true,
+      "description": "Ancestor names from nearest parent to country."
+    },
+    {
+      "name": "country_code",
+      "type": "string",
+      "nullable": true,
+      "description": "Country code"
+    },
+    {
+      "name": "country_name",
+      "type": "string",
+      "nullable": true,
+      "description": "Country name"
+    },
+    {
+      "name": "region_code",
+      "type": "string",
+      "nullable": true,
+      "description": "Region code"
+    },
+    {
+      "name": "region_name",
+      "type": "string",
+      "nullable": true,
+      "description": "Region name"
+    },
+    {
+      "name": "province_code",
+      "type": "string",
+      "nullable": true,
+      "description": "Province code"
+    },
+    {
+      "name": "province_name",
+      "type": "string",
+      "nullable": true,
+      "description": "Province name"
+    },
+    {
+      "name": "district_code",
+      "type": "string",
+      "nullable": true,
+      "description": "District code"
+    },
+    {
+      "name": "district_name",
+      "type": "string",
+      "nullable": true,
+      "description": "District name"
+    },
+    {
+      "name": "llg_code",
+      "type": "string",
+      "nullable": true,
+      "description": "Llg code"
+    },
+    {
+      "name": "llg_name",
+      "type": "string",
+      "nullable": true,
+      "description": "Llg name"
+    },
+    {
+      "name": "ward_code",
+      "type": "string",
+      "nullable": true,
+      "description": "Ward code"
+    },
+    {
+      "name": "ward_name",
+      "type": "string",
+      "nullable": true,
+      "description": "Ward name"
+    },
+    {
+      "name": "ward_number",
+      "type": "integer",
+      "nullable": true,
+      "description": "Ward number"
+    },
+    {
+      "name": "code_system",
+      "type": "string",
+      "nullable": true,
+      "description": "Code authority or generated-code namespace."
+    },
+    {
+      "name": "standard_code",
+      "type": "string",
+      "nullable": true,
+      "description": "Official/standard code where known."
+    },
+    {
+      "name": "is_standard_code",
+      "type": "boolean",
+      "nullable": true,
+      "description": "True when code is from a known official/standard source."
+    },
+    {
+      "name": "source_code",
+      "type": "string",
+      "nullable": true,
+      "description": "Source code"
+    },
+    {
+      "name": "source_code_column",
+      "type": "string",
+      "nullable": true,
+      "description": "Source code column"
+    },
+    {
+      "name": "code_note",
+      "type": "string",
+      "nullable": true,
+      "description": "Code note"
+    },
+    {
+      "name": "source_dataset",
+      "type": "string",
+      "nullable": true,
+      "description": "Source dataset"
+    },
+    {
+      "name": "source_url",
+      "type": "string",
+      "nullable": true,
+      "description": "Source url"
+    },
+    {
+      "name": "matched_to_map",
+      "type": "boolean",
+      "nullable": true,
+      "description": "True when a supplemental address record matched a generated map boundary parent."
+    },
+    {
+      "name": "has_boundary",
+      "type": "boolean",
+      "nullable": true,
+      "description": "Has boundary"
+    },
+    {
+      "name": "geometry_available",
+      "type": "boolean",
+      "nullable": true,
+      "description": "True when this address level has boundary geometry in the map package."
+    },
+    {
+      "name": "source_province_name",
+      "type": "string",
+      "nullable": true,
+      "description": "Source province name"
+    },
+    {
+      "name": "source_district_name",
+      "type": "string",
+      "nullable": true,
+      "description": "Source district name"
+    },
+    {
+      "name": "source_llg_name",
+      "type": "string",
+      "nullable": true,
+      "description": "Source llg name"
+    },
+    {
+      "name": "next_level",
+      "type": "string",
+      "nullable": true,
+      "description": "Next level"
+    },
+    {
+      "name": "child_level",
+      "type": "string",
+      "nullable": true,
+      "description": "Child level"
+    },
+    {
+      "name": "child_records_available",
+      "type": "boolean",
+      "nullable": true,
+      "description": "Child records available"
+    },
+    {
+      "name": "child_record_note",
+      "type": "string",
+      "nullable": true,
+      "description": "Child record note"
+    }
+  ]
+}
