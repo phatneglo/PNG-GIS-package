@@ -9,6 +9,7 @@ This folder contains the generated Papua New Guinea address package in common im
 - `address-records.csv` - spreadsheet/import friendly flat records, UTF-8 with BOM.
 - `address-records.xml` - XML flat records with stable element names.
 - `png-address-data.sql` - PostgreSQL-compatible SQL table, metadata, inserts, and indexes.
+- `png-cdms-admin-area-seed.sql` - CDMS-compatible seed for `public.admin_area_levels` and `public.admin_areas`.
 - `schema.json` - column definitions and data types.
 - `metadata.json` - generation metadata, counts, source notes, and hierarchy notes.
 

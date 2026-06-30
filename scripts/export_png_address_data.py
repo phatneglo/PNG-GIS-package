@@ -123,6 +123,7 @@ def export_year(address_root: Path, out_root: Path, year: str) -> None:
     write_csv(export_dir / "address-records.csv", records, columns)
     write_xml(export_dir / "address-records.xml", records, columns, metadata)
     write_sql(export_dir / "png-address-data.sql", records, columns, metadata)
+    write_cdms_admin_area_seed_sql(export_dir / "png-cdms-admin-area-seed.sql", records, metadata)
     write_readme(export_dir / "README.md", year, metadata)
 
     print(f"Wrote {export_dir} ({len(records):,} records).")
@@ -353,6 +354,361 @@ def write_sql(path: Path, records: list[dict[str, Any]], columns: list[str], met
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
+def write_cdms_admin_area_seed_sql(path: Path, records: list[dict[str, Any]], metadata: dict[str, Any]) -> None:
+    """Write an idempotent CDMS seed for public.admin_area_levels/admin_areas.
+
+    The normal png-address-data.sql export creates standalone import tables. CDMS
+    already has the shared location backbone in public.admin_areas, so this export
+    maps the PNG hierarchy into that schema while preserving source provenance in
+    extra_json for later GIS boundary/GeoJSON linking.
+    """
+    admin_records = build_cdms_admin_area_records(records, metadata)
+    columns = [
+        "admin_code",
+        "name",
+        "level_code",
+        "parent_code",
+        "external_code",
+        "source_system",
+        "source_record_id",
+        "source_level",
+        "label",
+        "region_code",
+        "region_name",
+        "province_code",
+        "province_name",
+        "district_code",
+        "district_name",
+        "llg_code",
+        "llg_name",
+        "ward_code",
+        "ward_name",
+        "ward_number",
+        "code_system",
+        "standard_code",
+        "is_standard_code",
+        "source_code",
+        "source_code_column",
+        "code_note",
+        "source_dataset",
+        "source_url",
+        "matched_to_map",
+        "has_boundary",
+        "geometry_available",
+        "geojson_level",
+        "geojson_folder",
+    ]
+
+    lines = [
+        "-- Papua New Guinea Administrative Area Seed for SDP CDMS",
+        f"-- Year: {metadata['year']}",
+        f"-- Generated at UTC: {metadata['generated_at_utc']}",
+        "-- Target schema: public.admin_area_levels, public.admin_areas",
+        "-- Hierarchy: COUNTRY -> REGION -> PROVINCE -> DISTRICT -> LLG -> WARD",
+        "-- Notes:",
+        "--   * Province codes use ISO 3166-2:PG where available.",
+        "--   * District, LLG, and ward codes may be generated package codes.",
+        "--   * Ward records are address/search records only unless geometry_available is true.",
+        "--   * Boundary geometry is not embedded here; copy GeoJSON later and link by admin area code/provenance.",
+        "",
+        "BEGIN;",
+        "",
+        "INSERT INTO public.admin_area_levels (code, name, sort_order, description, is_active)",
+        "VALUES",
+        "('COUNTRY','Country',10,'Country level.',TRUE),",
+        "('REGION','Region',20,'PNG region grouping level.',TRUE),",
+        "('PROVINCE','Province',30,'Province level.',TRUE),",
+        "('DISTRICT','District',40,'District level.',TRUE),",
+        "('LLG','Local-Level Government',50,'LLG level.',TRUE),",
+        "('WARD','Ward',60,'Ward level.',TRUE),",
+        "('COMMUNITY','Community / Village / Settlement',70,'Community, village, or settlement level.',TRUE)",
+        "ON CONFLICT (code) DO UPDATE SET",
+        "    name = EXCLUDED.name,",
+        "    sort_order = EXCLUDED.sort_order,",
+        "    description = EXCLUDED.description,",
+        "    is_active = EXCLUDED.is_active;",
+        "",
+        "CREATE TEMP TABLE tmp_png_admin_areas_seed (",
+        "    admin_code TEXT NOT NULL,",
+        "    name TEXT NOT NULL,",
+        "    level_code TEXT NOT NULL,",
+        "    parent_code TEXT NULL,",
+        "    external_code TEXT NULL,",
+        "    source_system TEXT NOT NULL,",
+        "    source_record_id TEXT NULL,",
+        "    source_level TEXT NULL,",
+        "    label TEXT NULL,",
+        "    region_code TEXT NULL,",
+        "    region_name TEXT NULL,",
+        "    province_code TEXT NULL,",
+        "    province_name TEXT NULL,",
+        "    district_code TEXT NULL,",
+        "    district_name TEXT NULL,",
+        "    llg_code TEXT NULL,",
+        "    llg_name TEXT NULL,",
+        "    ward_code TEXT NULL,",
+        "    ward_name TEXT NULL,",
+        "    ward_number INTEGER NULL,",
+        "    code_system TEXT NULL,",
+        "    standard_code TEXT NULL,",
+        "    is_standard_code BOOLEAN NULL,",
+        "    source_code TEXT NULL,",
+        "    source_code_column TEXT NULL,",
+        "    code_note TEXT NULL,",
+        "    source_dataset TEXT NULL,",
+        "    source_url TEXT NULL,",
+        "    matched_to_map BOOLEAN NULL,",
+        "    has_boundary BOOLEAN NULL,",
+        "    geometry_available BOOLEAN NULL,",
+        "    geojson_level TEXT NULL,",
+        "    geojson_folder TEXT NULL",
+        ") ON COMMIT DROP;",
+        "",
+    ]
+
+    if admin_records:
+        lines.append("INSERT INTO tmp_png_admin_areas_seed (")
+        lines.append("    " + ", ".join(columns))
+        lines.append(") VALUES")
+        value_lines = []
+        for record in admin_records:
+            values = ", ".join(sql_literal(record.get(column)) for column in columns)
+            value_lines.append(f"({values})")
+        lines.append(",\n".join(value_lines) + ";")
+        lines.append("")
+
+    for level_code in ["COUNTRY", "REGION", "PROVINCE", "DISTRICT", "LLG", "WARD"]:
+        lines.extend(admin_area_upsert_sql(level_code, metadata["year"]))
+
+    lines.extend([
+        "INSERT INTO public.app_settings (setting_scope, setting_key, setting_value, setting_json, description, is_secret, is_editable, is_active)",
+        "VALUES (",
+        "    'gis',",
+        "    'png_admin_boundary_package',",
+        "    " + sql_literal(f"png-json-maps/{metadata['year']}") + ",",
+        "    " + sql_literal({
+            "year": metadata["year"],
+            "hierarchy": ["country", "region", "province", "district", "llg", "ward"],
+            "geojson_root": f"png-json-maps/{metadata['year']}/geojson",
+            "address_root": f"png-json-address/{metadata['year']}",
+            "admin_area_match_key": "public.admin_areas.code",
+            "note": "Copy the generated GeoJSON folder into the CDMS/GIS asset pipeline and join layers using admin area code/provenance metadata.",
+        }) + ",",
+        "    'Generated PNG administrative boundary/address package location for future GIS layer imports.',",
+        "    FALSE, TRUE, TRUE",
+        ")",
+        "ON CONFLICT (setting_scope, setting_key) DO UPDATE SET",
+        "    setting_value = EXCLUDED.setting_value,",
+        "    setting_json = EXCLUDED.setting_json,",
+        "    description = EXCLUDED.description,",
+        "    is_secret = EXCLUDED.is_secret,",
+        "    is_editable = EXCLUDED.is_editable,",
+        "    is_active = EXCLUDED.is_active;",
+        "",
+        "COMMIT;",
+        "",
+    ])
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def admin_area_upsert_sql(level_code: str, year: str) -> list[str]:
+    return [
+        f"-- Upsert {level_code.lower()} admin areas after their parent level exists.",
+        "INSERT INTO public.admin_areas (",
+        "    country_code, admin_area_level_id, parent_admin_area_id, code, name,",
+        "    external_code, source_system, boundary_geojson, srid, extra_json, is_active",
+        ")",
+        "SELECT",
+        "    'PNG',",
+        "    lvl.admin_area_level_id,",
+        "    parent.admin_area_id,",
+        "    s.admin_code,",
+        "    s.name,",
+        "    s.external_code,",
+        "    s.source_system,",
+        "    NULL::jsonb,",
+        "    4326,",
+        "    jsonb_strip_nulls(jsonb_build_object(",
+        "        'admin_standard_year', " + sql_literal(year) + ",",
+        "        'source_record_id', s.source_record_id,",
+        "        'source_level', s.source_level,",
+        "        'source_code', s.source_code,",
+        "        'source_code_column', s.source_code_column,",
+        "        'original_code', s.external_code,",
+        "        'code_system', s.code_system,",
+        "        'standard_code', s.standard_code,",
+        "        'is_standard_code', s.is_standard_code,",
+        "        'label', s.label,",
+        "        'region_code', s.region_code,",
+        "        'region_name', s.region_name,",
+        "        'province_code', s.province_code,",
+        "        'province_name', s.province_name,",
+        "        'district_code', s.district_code,",
+        "        'district_name', s.district_name,",
+        "        'llg_code', s.llg_code,",
+        "        'llg_name', s.llg_name,",
+        "        'ward_code', s.ward_code,",
+        "        'ward_name', s.ward_name,",
+        "        'ward_number', s.ward_number,",
+        "        'code_note', s.code_note,",
+        "        'source_dataset', s.source_dataset,",
+        "        'source_url', s.source_url,",
+        "        'matched_to_map', s.matched_to_map,",
+        "        'has_boundary', s.has_boundary,",
+        "        'geometry_available', s.geometry_available,",
+        "        'geojson_level', s.geojson_level,",
+        "        'geojson_folder', s.geojson_folder",
+        "    )),",
+        "    TRUE",
+        "FROM tmp_png_admin_areas_seed s",
+        "JOIN public.admin_area_levels lvl ON lvl.code = s.level_code",
+        "LEFT JOIN public.admin_areas parent ON parent.country_code = 'PNG' AND parent.code = s.parent_code",
+        f"WHERE s.level_code = {sql_literal(level_code)}",
+        "ORDER BY s.name",
+        "ON CONFLICT (country_code, admin_area_level_id, code) DO UPDATE SET",
+        "    parent_admin_area_id = EXCLUDED.parent_admin_area_id,",
+        "    name = EXCLUDED.name,",
+        "    external_code = EXCLUDED.external_code,",
+        "    source_system = EXCLUDED.source_system,",
+        "    srid = EXCLUDED.srid,",
+        "    extra_json = EXCLUDED.extra_json,",
+        "    is_active = EXCLUDED.is_active;",
+        "",
+    ]
+
+
+def build_cdms_admin_area_records(records: list[dict[str, Any]], metadata: dict[str, Any]) -> list[dict[str, Any]]:
+    raw_records: list[dict[str, Any]] = [
+        {
+            "admin_code": "PNG",
+            "name": "Papua New Guinea",
+            "level_code": "COUNTRY",
+            "parent_code": None,
+            "external_code": "PNG",
+            "source_system": "png-json-maps-generated",
+            "source_record_id": "PNG-COUNTRY",
+            "source_level": "country",
+            "label": "Papua New Guinea",
+            "code_system": "ISO 3166-1 alpha-3",
+            "standard_code": "PNG",
+            "is_standard_code": True,
+            "has_boundary": True,
+            "geometry_available": True,
+            "geojson_level": "country",
+            "geojson_folder": f"png-json-maps/{metadata['year']}/geojson/country",
+        }
+    ]
+
+    for record in records:
+        level = str(record.get("level", "")).lower()
+        if level not in {"region", "province", "district", "llg", "ward"}:
+            continue
+        source_code = str(record.get("code", "")).strip()
+        name = str(record.get("name", "")).strip()
+        if not source_code or not name:
+            continue
+        raw_records.append(build_cdms_admin_area_record(record, source_code, metadata))
+
+    duplicate_counts: dict[tuple[str, str], int] = {}
+    for record in raw_records:
+        key = (str(record["level_code"]), str(record["admin_code"]))
+        duplicate_counts[key] = duplicate_counts.get(key, 0) + 1
+
+    for record in raw_records:
+        key = (str(record["level_code"]), str(record["admin_code"]))
+        if duplicate_counts[key] <= 1:
+            continue
+        suffix = str(record.get("source_record_id", "")).replace("PNG-", "R")
+        record["admin_code"] = f"{record['admin_code']}-{suffix}"
+
+    code_map: dict[tuple[str, str], str] = {}
+    for record in raw_records:
+        external = str(record.get("external_code") or record.get("admin_code") or "")
+        code_map[(str(record["level_code"]), external)] = str(record["admin_code"])
+
+    for record in raw_records:
+        parent_level = parent_level_code(str(record["level_code"]))
+        parent_external = str(record.get("_parent_external_code") or "")
+        if parent_level and parent_external:
+            record["parent_code"] = code_map.get((parent_level, parent_external), parent_external)
+        record.pop("_parent_external_code", None)
+
+    order = {"COUNTRY": 10, "REGION": 20, "PROVINCE": 30, "DISTRICT": 40, "LLG": 50, "WARD": 60}
+    return sorted(raw_records, key=lambda item: (order.get(str(item["level_code"]), 90), str(item.get("region_code", "")), str(item.get("province_code", "")), str(item.get("district_code", "")), str(item.get("llg_code", "")), int(item.get("ward_number") or 0), str(item["name"])))
+
+
+def build_cdms_admin_area_record(record: dict[str, Any], source_code: str, metadata: dict[str, Any]) -> dict[str, Any]:
+    level = str(record.get("level", "")).lower()
+    level_code = "LLG" if level == "llg" else level.upper()
+    geojson_folder_by_level = {
+        "region": "regions",
+        "province": "provinces",
+        "district": "districts",
+        "llg": "llgs",
+        "ward": "wards",
+    }
+    return {
+        "admin_code": source_code,
+        "name": str(record.get("name", "")).strip(),
+        "level_code": level_code,
+        "parent_code": None,
+        "_parent_external_code": parent_external_code(record, level),
+        "external_code": source_code,
+        "source_system": "png-json-maps-generated",
+        "source_record_id": record.get("record_id"),
+        "source_level": level,
+        "label": record.get("label"),
+        "region_code": record.get("region_code"),
+        "region_name": record.get("region_name"),
+        "province_code": record.get("province_code"),
+        "province_name": record.get("province_name"),
+        "district_code": record.get("district_code"),
+        "district_name": record.get("district_name"),
+        "llg_code": record.get("llg_code"),
+        "llg_name": record.get("llg_name"),
+        "ward_code": record.get("ward_code"),
+        "ward_name": record.get("ward_name"),
+        "ward_number": record.get("ward_number"),
+        "code_system": record.get("code_system"),
+        "standard_code": record.get("standard_code"),
+        "is_standard_code": record.get("is_standard_code"),
+        "source_code": record.get("source_code"),
+        "source_code_column": record.get("source_code_column"),
+        "code_note": record.get("code_note"),
+        "source_dataset": record.get("source_dataset"),
+        "source_url": record.get("source_url"),
+        "matched_to_map": record.get("matched_to_map"),
+        "has_boundary": record.get("has_boundary"),
+        "geometry_available": record.get("geometry_available"),
+        "geojson_level": level,
+        "geojson_folder": f"png-json-maps/{metadata['year']}/geojson/{geojson_folder_by_level[level]}",
+    }
+
+
+def parent_external_code(record: dict[str, Any], level: str) -> str | None:
+    if level == "region":
+        return "PNG"
+    if level == "province":
+        return str(record.get("region_code") or "") or None
+    if level == "district":
+        return str(record.get("province_code") or "") or None
+    if level == "llg":
+        return str(record.get("district_code") or "") or None
+    if level == "ward":
+        return str(record.get("llg_code") or "") or None
+    return None
+
+
+def parent_level_code(level_code: str) -> str | None:
+    return {
+        "REGION": "COUNTRY",
+        "PROVINCE": "REGION",
+        "DISTRICT": "PROVINCE",
+        "LLG": "DISTRICT",
+        "WARD": "LLG",
+    }.get(level_code)
+
+
 def write_readme(path: Path, year: str, metadata: dict[str, Any]) -> None:
     lines = [
         f"# PNG Address Data {year}",
@@ -366,6 +722,7 @@ def write_readme(path: Path, year: str, metadata: dict[str, Any]) -> None:
         "- `address-records.csv` - spreadsheet/import friendly flat records, UTF-8 with BOM.",
         "- `address-records.xml` - XML flat records with stable element names.",
         "- `png-address-data.sql` - PostgreSQL-compatible SQL table, metadata, inserts, and indexes.",
+        "- `png-cdms-admin-area-seed.sql` - CDMS-compatible seed for `public.admin_area_levels` and `public.admin_areas`.",
         "- `schema.json` - column definitions and data types.",
         "- `metadata.json` - generation metadata, counts, source notes, and hierarchy notes.",
         "",
